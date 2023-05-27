@@ -7,6 +7,10 @@ from utils.data_utils import check_extension, save_dataset
 def generate_mtsp_data(dataset_size, tsp_size):
     return np.random.uniform(size=(dataset_size, tsp_size, 2)).tolist()
 
+def generate_pdp_data(dataset_size, pdp_size):
+    return list(zip(np.random.uniform(size=(dataset_size, 2)).tolist(),  # Depot location
+                        np.random.uniform(size=(dataset_size, pdp_size, 2)).tolist()
+                        ))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -64,6 +68,8 @@ if __name__ == "__main__":
                 np.random.seed(opts.seed)
                 if problem == 'mtsp':
                     dataset = generate_mtsp_data(opts.dataset_size, graph_size)
+                elif problem == 'mpdp':
+                    dataset = generate_pdp_data(opts.dataset_size, graph_size)
                 else:
                     assert False, "Unknown problem: {}".format(problem)
 
