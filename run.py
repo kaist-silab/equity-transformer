@@ -6,7 +6,7 @@ import pprint as pp
 
 import torch
 import torch.optim as optim
-
+import torch.nn as nn
 from options import get_options
 from train import train_epoch, validate, get_inner_model
 from nets.attention_model import AttentionModel
@@ -27,7 +27,7 @@ def run(opts):
         json.dump(vars(opts), f, indent=True)
 
     # Set the device
-    opts.device = torch.device("cuda" if opts.use_cuda else "cpu")
+    opts.device = torch.device("cuda:0" if opts.use_cuda else "cpu")
 
     # Figure out what's the problem
     problem = load_problem(opts.problem)
@@ -54,29 +54,43 @@ def run(opts):
         normalization=opts.normalization,
         tanh_clipping=opts.tanh_clipping,
         checkpoint_encoder=opts.checkpoint_encoder,
-        shrink_size=opts.shrink_size
+        shrink_size=opts.shrink_size,
+        ft = opts.ft
     ).to(opts.device)
 
-    if opts.use_cuda and torch.cuda.device_count() > 1:
-        model = torch.nn.DataParallel(model)
+    # if opts.use_cuda and torch.cuda.device_count() > 1:
+    #     model = torch.nn.DataParallel(model)
 
     # Overwrite model parameters by parameters to load
     model_ = get_inner_model(model)
     model_.load_state_dict({**model_.state_dict(), **load_data.get('model', {})})
 
-    # Initialize optimizer
-    optimizer = optim.Adam(
-        [{'params': model.parameters(), 'lr': opts.lr_model}]
-    )
 
-    # Load optimizer state
-    if 'optimizer' in load_data:
-        optimizer.load_state_dict(load_data['optimizer'])
-        for state in optimizer.state.values():
-            for k, v in state.items():
-                # if isinstance(v, torch.Tensor):
-                if torch.is_tensor(v):
-                    state[k] = v.to(opts.device)
+    if opts.ft == "N":
+        # Initialize optimizer
+        optimizer = optim.Adam(
+            [{'params': model.parameters(), 'lr': opts.lr_model}]
+        )
+    else:
+        for p in model.parameters():
+            p.requires_grad = False
+        model.contextual_emb = nn.Sequential(nn.Linear(opts.embedding_dim, 8 * opts.embedding_dim, bias=False),
+                nn.ReLU(),
+                nn.Linear(8 * opts.embedding_dim, opts.embedding_dim, bias=False)
+                )
+        model = model.to(opts.device)
+        optimizer = optim.Adam(
+        [{'params': model.contextual_emb.parameters(), 'lr': opts.lr_model}]
+    )
+    
+    # # Load optimizer state
+    # if 'optimizer' in load_data:
+    #     optimizer.load_state_dict(load_data['optimizer'])
+    #     for state in optimizer.state.values():
+    #         for k, v in state.items():
+    #             # if isinstance(v, torch.Tensor):
+    #             if torch.is_tensor(v):
+    #                 state[k] = v.to(opts.device)
 
     # Initialize learning rate scheduler, decay by lr_decay once per epoch!
     lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lambda epoch: opts.lr_decay ** epoch)

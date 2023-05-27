@@ -15,7 +15,7 @@ def get_options(args=None):
     parser.add_argument('--epoch_size', type=int, default=1280000, help='Number of instances per epoch during training')
     parser.add_argument('--val_size', type=int, default=10000,
                         help='Number of instances used for reporting validation performance')
-    parser.add_argument('--val_dataset', type=str, default='data/mtsp/tsp200_test_seed3333.pkl', help='Dataset file to use for validation')
+    parser.add_argument('--val_dataset', type=str, help='Dataset file to use for validation')
     parser.add_argument('--N_aug', type=int, default=8, help="The size of the problem graph")
     
     # Model
@@ -61,7 +61,10 @@ def get_options(args=None):
     parser.add_argument('--load_path', help='Path to load model parameters and optimizer state from')
     parser.add_argument('--resume', help='Resume from previous checkpoint file')
     parser.add_argument('--no_progress_bar', action='store_true', help='Disable progress bar')
-
+    
+    # Finetuning
+    parser.add_argument('--ft',default="N", type=str, help='Finetuning')
+    
     opts = parser.parse_args(args)
 
     opts.use_cuda = torch.cuda.is_available() and not opts.no_cuda

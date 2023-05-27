@@ -86,16 +86,16 @@ def train_epoch(model, optimizer, lr_scheduler, epoch, val_dataset, problem, opt
     # Put model in train mode!
     model.train()
     set_decode_type(model, "sampling")
-    model = get_inner_model(model)
+    # model = get_inner_model(model)
     for batch_id, batch in enumerate(tqdm(training_dataloader, disable=opts.no_progress_bar)):
 
-        agent_num = random.sample(range(opts.agent_min, opts.agent_max), 1)[0]
-        if isinstance(model, DataParallel):
-            model.module.agent_num = agent_num
-            model.module.embedder.agent_num = agent_num
-        else:
-            model.agent_num = agent_num
-            model.embedder.agent_num = agent_num
+        agent_num = random.sample(range(opts.agent_min, opts.agent_max + 1), 1)[0]
+        # if isinstance(model, DataParallel):
+        #     model.module.agent_num = agent_num
+        #     model.module.embedder.agent_num = agent_num
+        # else:
+        model.agent_num = agent_num
+        model.embedder.agent_num = agent_num
         
         train_batch(
             model,
