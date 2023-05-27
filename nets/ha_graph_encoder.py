@@ -49,34 +49,13 @@ class MultiHeadAttention(nn.Module):
 
         # pickup
         self.W1_query = nn.Parameter(torch.Tensor(n_heads, input_dim, key_dim))
-        # self.W1_key = nn.Parameter(torch.Tensor(n_heads, input_dim, key_dim))
-        # self.W1_val = nn.Parameter(torch.Tensor(n_heads, input_dim, val_dim))
-
         self.W2_query = nn.Parameter(torch.Tensor(n_heads, input_dim, key_dim))
-        # self.W2_key = nn.Parameter(torch.Tensor(n_heads, input_dim, key_dim))
-        # self.W2_val = nn.Parameter(torch.Tensor(n_heads, input_dim, val_dim))
-
         self.W3_query = nn.Parameter(torch.Tensor(n_heads, input_dim, key_dim))
-        # self.W3_key = nn.Parameter(torch.Tensor(n_heads, input_dim, key_dim))
-        # self.W3_val = nn.Parameter(torch.Tensor(n_heads, input_dim, val_dim))
 
         # delivery
         self.W4_query = nn.Parameter(torch.Tensor(n_heads, input_dim, key_dim))
-        # self.W4_key = nn.Parameter(torch.Tensor(n_heads, input_dim, key_dim))
-        # self.W4_val = nn.Parameter(torch.Tensor(n_heads, input_dim, val_dim))
-        
         self.W5_query = nn.Parameter(torch.Tensor(n_heads, input_dim, key_dim))
-        # self.W5_key = nn.Parameter(torch.Tensor(n_heads, input_dim, key_dim))
-        # self.W5_val = nn.Parameter(torch.Tensor(n_heads, input_dim, val_dim))
-        
         self.W6_query = nn.Parameter(torch.Tensor(n_heads, input_dim, key_dim))
-        # self.W6_key = nn.Parameter(torch.Tensor(n_heads, input_dim, key_dim))
-        # self.W6_val = nn.Parameter(torch.Tensor(n_heads, input_dim, val_dim))
-
-        # agent
-        # self.W7_query = nn.Parameter(torch.Tensor(n_heads, input_dim, key_dim))
-        # self.W1_key = nn.Parameter(torch.Tensor(n_heads, input_dim, key_dim))
-        # self.W1_val = nn.Parameter(torch.Tensor(n_heads, input_dim, val_dim))
 
         if embed_dim is not None:
             self.W_out = nn.Parameter(torch.Tensor(n_heads, key_dim, embed_dim))
@@ -127,14 +106,6 @@ class MultiHeadAttention(nn.Module):
         # pickup -> all pickups attention
         shp_alldelivery = (self.n_heads, batch_size, n_pick, -1)
         shp_q_alldelivery = (self.n_heads, batch_size, n_pick, -1)
-
-
-
-        # pickup -> all agent attention
-        shp_allagent = (self.n_heads, batch_size, n_pick, -1)
-        shp_q_shp_allagent = (self.n_heads, batch_size, n_pick, -1)
-
-
 
         # Calculate queries, (n_heads, n_query, graph_size, key/val_size)
         Q = torch.matmul(qflat, self.W_query).view(shp_q)
