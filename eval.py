@@ -131,7 +131,7 @@ if __name__ == "__main__":
                         help="Batch size to use during (baseline) evaluation")
     parser.add_argument('--decode_type', type=str, default='greedy',
                         help='Decode type, greedy or sampling')
-    parser.add_argument('--width', type=int, nargs='+', default=32,
+    parser.add_argument('--width', type=int, nargs='+', default=[0],
                         help='Sizes of beam to use for beam search (or number of samples for sampling), '
                              '0 to disable (default), -1 for infinite')
     parser.add_argument('--decode_strategy', type=str, default='greedy',
