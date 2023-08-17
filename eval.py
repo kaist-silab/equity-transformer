@@ -22,6 +22,39 @@ np.random.seed(1234)
 random.seed(1234)
 
 
+#Min-Max scaling
+
+def coordinate_transformation(x):
+    input = x.clone()
+    # print(input[:,:,0].shape)
+    max_x, indices_max_x = input[:,:,0].max(dim=1)
+    max_y, indices_max_y = input[:,:,1].max(dim=1)
+    min_x, indices_min_x = input[:,:,0].min(dim=1)
+    min_y, indices_min_y = input[:,:,1].min(dim=1)
+    # shapes: (batch_size, ); (batch_size, )
+    
+    diff_x = max_x - min_x
+    diff_y = max_y - min_y
+    # xy_exchanged = diff_y > diff_x
+
+    # shift to zero
+    input[:,:,0] -= (min_x).unsqueeze(-1)
+    input[:,:,1] -= (min_y).unsqueeze(-1)
+    
+    # exchange coordinates for those diff_y > diff_x
+    # input[xy_exchanged, :, 0], input[xy_exchanged, :, 1] =  input[xy_exchanged, :, 1], input[xy_exchanged, :, 0]    
+    # scale to (0, 1)
+    scale_degree = torch.max(diff_x, diff_y)
+    # print(scale_degree)
+    # print(scale_degree.shape)
+    
+    # print(scale_degree.shape)
+    scale_degree = scale_degree.view(input.shape[0], 1, 1)
+    input /= scale_degree + 1e-10
+    return input, scale_degree
+
+
+
 def eval_dataset_mp(args):
     (model, dataset_path, width, softmax_temp, opts, i, num_processes) = args
 
@@ -82,7 +115,9 @@ def _eval_dataset(model, dataset, width, softmax_temp, opts, device):
         if opts.problem == 'mtsp':
             max_val = batch.max()
             if max_val > 1:
-                batch = batch/max_val
+                batch, max_val = coordinate_transformation(batch)
+                # batch /= max_val
+                # print("here")
         else:
             max_val = None
 
@@ -177,7 +212,7 @@ if __name__ == "__main__":
     # For TSPLIB
     if max_val is not None:
         if max_val > 1:
-            Performance = Performance * max_val
+            Performance = Performance * max_val.item()
     Time = np.array(Time)
     print("Average-Performance : ", np.mean(Performance))
     print("Average-Time : ", np.mean(Time))
