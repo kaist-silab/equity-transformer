@@ -6,6 +6,7 @@
 * NumPy
 * [PyTorch](http://pytorch.org/)>=1.7
 * tqdm
+* tsplib95
 
 ## Training
 
